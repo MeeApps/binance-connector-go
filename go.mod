@@ -1,4 +1,4 @@
-module github.com/binance/binance-connector-go
+module github.com/MeeApps/binance-connector-go
 
 go 1.22
 
