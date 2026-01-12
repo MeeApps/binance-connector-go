@@ -71,6 +71,12 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 		// websocket.Conn.ReadMessage or when the stopC channel is
 		// closed by the client.
 		defer close(doneCh)
+		closed := false
+		defer func() {
+			if !closed {
+				c.Close()
+			}
+		}()
 		if WebsocketKeepalive {
 			keepAlive(c, WebsocketTimeout)
 		}
@@ -85,7 +91,6 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 					if !silent {
 						errHandler(err)
 					}
-					stopCh <- struct{}{}
 					return
 				}
 				handler(message)
@@ -96,8 +101,11 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 			select {
 			case <-stopCh:
 				silent = true
+				closed = true
+				c.Close()
 				return
 			case <-doneCh:
+				return
 			}
 		}
 	}()
