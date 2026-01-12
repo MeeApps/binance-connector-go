@@ -2,6 +2,7 @@ package binance_connector
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -74,7 +75,10 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 		closed := false
 		defer func() {
 			if !closed {
-				c.Close()
+				err := c.Close()
+				if err != nil {
+					log.Println("Error closing connection:", err)
+				}
 			}
 		}()
 		if WebsocketKeepalive {
@@ -102,7 +106,10 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 			case <-stopCh:
 				silent = true
 				closed = true
-				c.Close()
+				err := c.Close()
+				if err != nil {
+					log.Println("Error closing connection:", err)
+				}
 				return
 			case <-doneCh:
 				return
